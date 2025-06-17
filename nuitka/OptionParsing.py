@@ -18,6 +18,8 @@ import re
 import sys
 from string import Formatter
 
+from traitlets import default
+
 from nuitka.PythonFlavors import getPythonFlavorName
 from nuitka.PythonVersions import isPythonWithGil
 from nuitka.utils.CommandLineOptions import SUPPRESS_HELP, makeOptionsParser
@@ -1211,6 +1213,11 @@ values. Default none."""
     % (",".join('"%s"' % cache_name for cache_name in _cache_names)),
 )
 
+caching_group.add_option(
+    "--cache-modules-dump",
+    dest = "cache_modules_dump",
+    action="store",
+)
 caching_group.add_option(
     "--disable-bytecode-cache",
     action="store_true",

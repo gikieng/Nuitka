@@ -1464,6 +1464,9 @@ def shallRunInDebugger():
     return options.debugger
 
 
+def getCacheModulesDumpDir():
+    """:returns: str derived from ``--cache-modules-dump``"""
+    return options.cache_modules_dump
 def getXMLDumpOutputFilename():
     """:returns: str derived from ``--xml``"""
     return options.xml_output

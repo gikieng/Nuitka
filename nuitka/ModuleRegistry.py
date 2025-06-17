@@ -13,6 +13,7 @@
 
 import collections
 import os
+from turtle import done
 
 from nuitka.containers.Namedtuples import makeNamedtupleClass
 from nuitka.containers.OrderedSets import OrderedSet
@@ -35,7 +36,7 @@ ActiveModuleInfo = collections.namedtuple(
 # Already traversed modules
 done_modules = set()
 
-
+MODULE_CACHE_DIR = None
 def addRootModule(module):
     root_modules.add(module)
 
@@ -148,6 +149,15 @@ def startTraversal():
             source_ref=None,
         )
     done_modules = set()
+    if MODULE_CACHE_DIR is not None:
+        import dill
+
+        for file in os.listdir(MODULE_CACHE_DIR):
+            with open(os.path.join(MODULE_CACHE_DIR, file), "rb") as f:
+                if file == "__main__":
+                    continue
+                module = dill.load(f)
+                done_modules.add(module)
 
     for active_module in active_modules:
         active_module.startTraversal()

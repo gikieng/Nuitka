@@ -1,4 +1,5 @@
 #     Copyright 2025, Kay Hayen, mailto:kay.hayen@gmail.com find license text at end of file
+import dill
 
 
 """ This is the main actions of Nuitka.
@@ -11,6 +12,7 @@ a distribution folder.
 """
 
 import os
+import pickle
 import sys
 
 from nuitka.build.DataComposerInterface import runDataComposer
@@ -99,6 +101,7 @@ from nuitka.utils.FileOperations import (
     getExternalUsePath,
     getReportPath,
     openTextFile,
+    putBinaryFileContents,
     removeDirectory,
     resetDirectory,
 )
@@ -258,7 +261,7 @@ def _createMainModule():
 
     # Allow plugins to add more modules based on the initial set being complete.
     Plugins.onModuleInitialSet()
-
+    ModuleRegistry.MODULE_CACHE_DIR = Options.getCacheModulesDumpDir()
     # Then optimize the tree and potentially recursed modules.
     # TODO: The passed filename is really something that should come from
     # a command line option, it's a filename for the graph, which might not
@@ -290,7 +293,14 @@ def _createMainModule():
         # Main module might change behind our back, look it up again.
         return main_module
 
-
+def dumpCacheModules():
+    print("dumping cache modules")
+    dump_dir = Options.getCacheModulesDumpDir()
+    if dump_dir is not None:
+        os.makedirs(dump_dir, exist_ok=True)
+        for module in ModuleRegistry.getDoneModules():
+            if module.getFullName() == "__main__":continue
+            putBinaryFileContents(f"{dump_dir}/{module.getFullName()}.dill", dill.dumps(module))
 def dumpTreeXML():
     filename = Options.getXMLDumpOutputFilename()
 
@@ -1000,6 +1010,8 @@ def _main():
     addIncludedDataFilesFromPlugins()
 
     dumpTreeXML()
+
+    dumpCacheModules()
 
     # Make the actual compilation.
     result, scons_options = compileTree()
